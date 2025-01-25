@@ -24,6 +24,13 @@
             border-radius: 4px;
             cursor: pointer;
         }
+        #debug {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -39,15 +46,45 @@
         <button onclick="buy('Интернет + ТВ', 999)">Выбрать</button>
     </div>
 
+    <div id="debug"></div>
+
     <script>
-        function buy(tariff, price) {
-            const data = {
-                tariff: tariff,
-                price: price
-            };
-            window.Telegram.WebApp.sendData(JSON.stringify(data));
+        let tg = window.Telegram.WebApp;
+        
+        function log(message) {
+            const debug = document.getElementById('debug');
+            debug.innerHTML += message + '<br>';
+            console.log(message);
         }
+
+        function buy(tariff, price) {
+            try {
+                log('Подготовка данных...');
+                
+                const data = {
+                    tariff: tariff,
+                    price: price
+                };
+                
+                log('Данные: ' + JSON.stringify(data));
+                
+                tg.sendData(JSON.stringify(data));
+                log('Данные отправлены');
+                
+                // Небольшая задержка перед закрытием
+                setTimeout(() => {
+                    log('Закрытие WebApp...');
+                    tg.close();
+                }, 500);
+                
+            } catch (error) {
+                log('Ошибка: ' + error.message);
+            }
+        }
+
+        // Инициализация
         window.Telegram.WebApp.ready();
+        log('WebApp инициализирован');
     </script>
 </body>
 </html>
