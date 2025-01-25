@@ -137,5 +137,32 @@
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
     </script>
+    // ... existing code ...
+
+<script>
+    function submitOrder() {
+        const webApp = window.Telegram.WebApp;
+        const address = document.getElementById('address').value;
+        const time = document.getElementById('time').value;
+
+        if (!address) {
+            alert('Пожалуйста, введите адрес');
+            return;
+        }
+
+        const data = {
+            action: "buy",
+            product: selectedProduct,
+            price: selectedPrice,
+            address: address,
+            time: time
+        };
+
+        console.log('Отправляемые данные:', data);  // Отладочная информация
+        
+        webApp.sendData(JSON.stringify(data));
+        webApp.close();
+    }
+</script>
 </body>
 </html>
