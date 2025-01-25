@@ -6,41 +6,136 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f2f5;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--tg-theme-bg-color, #f0f2f5);
+            color: var(--tg-theme-text-color, #000000);
         }
+
+        .product-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: var(--tg-theme-secondary-bg-color, #ffffff);
+        }
+
+        .product-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .product-description {
+            margin-bottom: 15px;
+        }
+
+        .product-price {
+            font-weight: bold;
+            color: var(--tg-theme-button-color, #0088cc);
+            margin-bottom: 10px;
+        }
+
         .button {
-            background-color: #0088cc;
-            color: white;
-            padding: 15px 32px;
+            background-color: var(--tg-theme-button-color, #0088cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
+            width: 100%;
         }
+
         .button:hover {
-            background-color: #006699;
+            opacity: 0.9;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
-    <button class="button" onclick="buyProduct()">Купить</button>
+    <div class="product-card">
+        <div class="product-title">Интернет 100 Мбит/с</div>
+        <div class="product-description">Высокоскоростной интернет для дома</div>
+        <div class="product-price">799 ₽/мес</div>
+        <button class="button" onclick="buyProduct('Интернет 100 Мбит/с', 799)">Подключить</button>
+    </div>
+
+    <div class="product-card">
+        <div class="product-title">Интернет + ТВ</div>
+        <div class="product-description">100 Мбит/с + 160 каналов</div>
+        <div class="product-price">999 ₽/мес</div>
+        <button class="button" onclick="buyProduct('Интернет + ТВ', 999)">Подключить</button>
+    </div>
+
+    <div id="orderForm" style="display: none;" class="product-card">
+        <div class="product-title">Оформление заявки</div>
+        <div class="form-group">
+            <label>Адрес подключения:</label>
+            <input type="text" id="address" placeholder="Введите ваш адрес">
+        </div>
+        <div class="form-group">
+            <label>Удобное время для подключения:</label>
+            <select id="time">
+                <option value="9-12">9:00 - 12:00</option>
+                <option value="12-15">12:00 - 15:00</option>
+                <option value="15-18">15:00 - 18:00</option>
+                <option value="18-21">18:00 - 21:00</option>
+            </select>
+        </div>
+        <button class="button" onclick="submitOrder()">Отправить заявку</button>
+    </div>
 
     <script>
-        function buyProduct() {
+        let selectedProduct = '';
+        let selectedPrice = 0;
+
+        function buyProduct(product, price) {
+            selectedProduct = product;
+            selectedPrice = price;
+            document.getElementById('orderForm').style.display = 'block';
+        }
+
+        function submitOrder() {
             const webApp = window.Telegram.WebApp;
-            
+            const address = document.getElementById('address').value;
+            const time = document.getElementById('time').value;
+
+            if (!address) {
+                alert('Пожалуйста, введите адрес');
+                return;
+            }
+
             webApp.sendData(JSON.stringify({
                 action: "buy",
-                product: "Подключение связи"
+                product: selectedProduct,
+                price: selectedPrice,
+                address: address,
+                time: time
             }));
-            
+
             webApp.close();
         }
+
+        // Инициализация Telegram WebApp
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
     </script>
 </body>
 </html>
