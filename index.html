@@ -6,116 +6,42 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 20px auto;
             padding: 20px;
-            background-color: var(--tg-theme-bg-color, #f0f2f5);
-            color: var(--tg-theme-text-color, #000000);
+            background-color: #f0f2f5;
         }
-
-        .product-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            background-color: var(--tg-theme-secondary-bg-color, #ffffff);
-        }
-
-        .product-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .product-description {
-            margin-bottom: 15px;
-        }
-
-        .product-price {
-            font-weight: bold;
-            color: var(--tg-theme-button-color, #0088cc);
-            margin-bottom: 10px;
-        }
-
         .button {
-            background-color: var(--tg-theme-button-color, #0088cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            padding: 10px 20px;
+            background-color: #0088cc;
+            color: white;
+            padding: 15px 32px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            width: 100%;
+            margin: 10px 0;
         }
-
-        .button:hover {
-            opacity: 0.9;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .form-group input, .form-group select {
+        input, select {
             width: 100%;
             padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            margin: 5px 0;
         }
     </style>
 </head>
 <body>
-    <div class="product-card">
-        <div class="product-title">Интернет 100 Мбит/с</div>
-        <div class="product-description">Высокоскоростной интернет для дома</div>
-        <div class="product-price">799 ₽/мес</div>
-        <button class="button" onclick="buyProduct('Интернет 100 Мбит/с', 799)">Подключить</button>
-    </div>
-
-    <div class="product-card">
-        <div class="product-title">Интернет + ТВ</div>
-        <div class="product-description">100 Мбит/с + 160 каналов</div>
-        <div class="product-price">999 ₽/мес</div>
-        <button class="button" onclick="buyProduct('Интернет + ТВ', 999)">Подключить</button>
-    </div>
-
-    <div id="orderForm" style="display: none;" class="product-card">
-        <div class="product-title">Оформление заявки</div>
-        <div class="form-group">
-            <label>Адрес подключения:</label>
-            <input type="text" id="address" placeholder="Введите ваш адрес">
-        </div>
-        <div class="form-group">
-            <label>Удобное время для подключения:</label>
-            <select id="time">
-                <option value="9-12">9:00 - 12:00</option>
-                <option value="12-15">12:00 - 15:00</option>
-                <option value="15-18">15:00 - 18:00</option>
-                <option value="18-21">18:00 - 21:00</option>
-            </select>
-        </div>
+    <div>
+        <h3>Оформление заявки</h3>
+        <select id="tariff">
+            <option value="Интернет 100">Интернет 100 Мбит/с - 799 ₽/мес</option>
+            <option value="Интернет + ТВ">Интернет + ТВ - 999 ₽/мес</option>
+        </select>
+        <input type="text" id="address" placeholder="Введите адрес">
         <button class="button" onclick="submitOrder()">Отправить заявку</button>
     </div>
 
     <script>
-        let selectedProduct = '';
-        let selectedPrice = 0;
-
-        function buyProduct(product, price) {
-            selectedProduct = product;
-            selectedPrice = price;
-            document.getElementById('orderForm').style.display = 'block';
-        }
-
         function submitOrder() {
             const webApp = window.Telegram.WebApp;
+            const tariff = document.getElementById('tariff').value;
             const address = document.getElementById('address').value;
-            const time = document.getElementById('time').value;
 
             if (!address) {
                 alert('Пожалуйста, введите адрес');
@@ -124,45 +50,13 @@
 
             webApp.sendData(JSON.stringify({
                 action: "buy",
-                product: selectedProduct,
-                price: selectedPrice,
-                address: address,
-                time: time
+                product: tariff,
+                address: address
             }));
-
-            webApp.close();
         }
 
-        // Инициализация Telegram WebApp
+        // Инициализация WebApp
         window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
     </script>
-    // ... existing code ...
-
-<script>
-    function submitOrder() {
-        const webApp = window.Telegram.WebApp;
-        const address = document.getElementById('address').value;
-        const time = document.getElementById('time').value;
-
-        if (!address) {
-            alert('Пожалуйста, введите адрес');
-            return;
-        }
-
-        const data = {
-            action: "buy",
-            product: selectedProduct,
-            price: selectedPrice,
-            address: address,
-            time: time
-        };
-
-        console.log('Отправляемые данные:', data);  // Отладочная информация
-        
-        webApp.sendData(JSON.stringify(data));
-        webApp.close();
-    }
-</script>
 </body>
 </html>
