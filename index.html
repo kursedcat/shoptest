@@ -10,42 +10,40 @@
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
+            background-color: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
         }
         .card {
             border: 1px solid #ddd;
             padding: 15px;
             margin: 10px 0;
             border-radius: 8px;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
         }
         .price {
             font-size: 20px;
             font-weight: bold;
-            color: #0088cc;
+            color: var(--tg-theme-button-color, #0088cc);
         }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #0088cc;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            margin: 5px 0;
-            cursor: pointer;
-        }
-        input {
+        .input-field {
             width: 100%;
             padding: 8px;
-            margin: 5px 0;
+            margin: 10px 0;
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
+            font-size: 16px;
         }
-        #debug {
-            margin-top: 20px;
-            padding: 10px;
-            background: #f5f5f5;
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--tg-theme-button-color, #0088cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
             border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -54,90 +52,46 @@
         <h3>Интернет 100 Мбит/с</h3>
         <p>Высокоскоростной домашний интернет</p>
         <p class="price">799 ₽/мес</p>
-        <input type="text" id="address1" placeholder="Введите адрес подключения">
-        <button onclick="sendOrder('Интернет 100 Мбит/с', 799)">Подключить</button>
+        <input type="text" class="input-field" id="address" placeholder="Введите адрес подключения">
+        <button class="submit-btn" onclick="submitOrder('Интернет 100 Мбит/с', 799)">
+            Оформить заявку
+        </button>
     </div>
 
     <div class="card">
         <h3>Интернет + ТВ</h3>
         <p>Интернет 100 Мбит/с + 160 каналов</p>
         <p class="price">999 ₽/мес</p>
-        <input type="text" id="address2" placeholder="Введите адрес подключения">
-        <button onclick="sendOrder('Интернет + ТВ', 999)">Подключить</button>
+        <input type="text" class="input-field" id="address2" placeholder="Введите адрес подключения">
+        <button class="submit-btn" onclick="submitOrder('Интернет + ТВ', 999)">
+            Оформить заявку
+        </button>
     </div>
-
-    <div id="debug"></div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        
-        function log(message) {
-            const debug = document.getElementById('debug');
-            debug.innerHTML += message + '<br>';
-            console.log(message);
-        }
+        tg.expand();
 
-        // Проверяем инициализацию WebApp
-        if (tg) {
-            log('WebApp инициализирован');
-            tg.ready();
-        } else {
-            log('Ошибка: WebApp не найден');
-        }
+        function submitOrder(tariff, price) {
+            const addressId = tariff === 'Интернет + ТВ' ? 'address2' : 'address';
+            const address = document.getElementById(addressId).value;
 
-        function sendOrder(tariff, price) {
-            try {
-                log('Начало отправки заказа...');
-                
-                // Определяем правильный input в зависимости от тарифа
-                const addressInput = tariff.includes('ТВ') ? 'address2' : 'address1';
-                const address = document.getElementById(addressInput).value;
-
-                if (!address) {
-                    log('Ошибка: адрес не указан');
-                    alert('Пожалуйста, введите адрес подключения');
-                    return;
-                }
-
-                const data = {
-                    tariff: tariff,
-                    price: price,
-                    address: address
-                };
-
-                log('Подготовленные данные: ' + JSON.stringify(data));
-
-                // Проверяем метод MainButton
-                if (tg.MainButton) {
-                    log('MainButton доступен');
-                    tg.MainButton.setText('Отправка...');
-                    tg.MainButton.show();
-                }
-
-                // Отправляем данные
-                tg.sendData(JSON.stringify(data));
-                log('Данные отправлены');
-
-                // Закрываем WebApp
-                setTimeout(() => {
-                    log('Закрытие WebApp...');
-                    tg.close();
-                }, 1000);
-
-            } catch (error) {
-                log('Ошибка: ' + error.message);
-                alert('Произошла ошибка при отправке данных');
+            if (!address) {
+                alert('Пожалуйста, введите адрес подключения');
+                return;
             }
+
+            const data = {
+                tariff: tariff,
+                price: price,
+                address: address
+            };
+
+            tg.sendData(JSON.stringify(data));
         }
 
         // Инициализация WebApp
-        window.Telegram.WebApp.onEvent('mainButtonClicked', function(){
-            log('Кнопка MainButton нажата');
-        });
-
-        window.Telegram.WebApp.onEvent('viewportChanged', function(){
-            log('Viewport изменен');
-        });
+        window.Telegram.WebApp.ready();
     </script>
 </body>
 </html>
