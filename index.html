@@ -3,87 +3,141 @@
 <head>
     <title>Подключение связи</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
             padding: 20px;
-            background-color: #f0f2f5;
         }
-        .button {
-            background-color: #0088cc;
-            color: white;
-            padding: 15px 32px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
+        .card {
+            border: 1px solid #ddd;
+            padding: 15px;
             margin: 10px 0;
+            border-radius: 8px;
         }
-        input, select {
+        .price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #0088cc;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #0088cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+        input {
             width: 100%;
             padding: 8px;
             margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        #debug {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
-    <div id="debug"></div>
-    <div>
-        <h3>Оформление заявки</h3>
-        <select id="tariff">
-            <option value="Интернет 100">Интернет 100 Мбит/с - 799 ₽/мес</option>
-            <option value="Интернет + ТВ">Интернет + ТВ - 999 ₽/мес</option>
-        </select>
-        <input type="text" id="address" placeholder="Введите адрес">
-        <button class="button" onclick="submitOrder()">Отправить заявку</button>
+    <div class="card">
+        <h3>Интернет 100 Мбит/с</h3>
+        <p>Высокоскоростной домашний интернет</p>
+        <p class="price">799 ₽/мес</p>
+        <input type="text" id="address1" placeholder="Введите адрес подключения">
+        <button onclick="sendOrder('Интернет 100 Мбит/с', 799)">Подключить</button>
     </div>
 
+    <div class="card">
+        <h3>Интернет + ТВ</h3>
+        <p>Интернет 100 Мбит/с + 160 каналов</p>
+        <p class="price">999 ₽/мес</p>
+        <input type="text" id="address2" placeholder="Введите адрес подключения">
+        <button onclick="sendOrder('Интернет + ТВ', 999)">Подключить</button>
+    </div>
+
+    <div id="debug"></div>
+
     <script>
-        // Функция для отладки
-        function debug(text) {
-            document.getElementById('debug').innerHTML += text + '<br>';
-            console.log(text);
+        let tg = window.Telegram.WebApp;
+        
+        function log(message) {
+            const debug = document.getElementById('debug');
+            debug.innerHTML += message + '<br>';
+            console.log(message);
         }
 
         // Проверяем инициализацию WebApp
-        if (window.Telegram.WebApp) {
-            debug('WebApp доступен');
+        if (tg) {
+            log('WebApp инициализирован');
+            tg.ready();
         } else {
-            debug('WebApp не доступен');
+            log('Ошибка: WebApp не найден');
         }
 
-        function submitOrder() {
-            debug('Начало отправки заказа');
-            
-            const webApp = window.Telegram.WebApp;
-            const tariff = document.getElementById('tariff').value;
-            const address = document.getElementById('address').value;
-
-            if (!address) {
-                debug('Адрес не указан');
-                alert('Пожалуйста, введите адрес');
-                return;
-            }
-
-            const data = {
-                action: "buy",
-                product: tariff,
-                address: address
-            };
-
-            debug('Подготовленные данные: ' + JSON.stringify(data));
-
+        function sendOrder(tariff, price) {
             try {
-                webApp.sendData(JSON.stringify(data));
-                debug('Данные отправлены');
-            } catch (e) {
-                debug('Ошибка при отправке: ' + e.message);
+                log('Начало отправки заказа...');
+                
+                // Определяем правильный input в зависимости от тарифа
+                const addressInput = tariff.includes('ТВ') ? 'address2' : 'address1';
+                const address = document.getElementById(addressInput).value;
+
+                if (!address) {
+                    log('Ошибка: адрес не указан');
+                    alert('Пожалуйста, введите адрес подключения');
+                    return;
+                }
+
+                const data = {
+                    tariff: tariff,
+                    price: price,
+                    address: address
+                };
+
+                log('Подготовленные данные: ' + JSON.stringify(data));
+
+                // Проверяем метод MainButton
+                if (tg.MainButton) {
+                    log('MainButton доступен');
+                    tg.MainButton.setText('Отправка...');
+                    tg.MainButton.show();
+                }
+
+                // Отправляем данные
+                tg.sendData(JSON.stringify(data));
+                log('Данные отправлены');
+
+                // Закрываем WebApp
+                setTimeout(() => {
+                    log('Закрытие WebApp...');
+                    tg.close();
+                }, 1000);
+
+            } catch (error) {
+                log('Ошибка: ' + error.message);
+                alert('Произошла ошибка при отправке данных');
             }
         }
 
         // Инициализация WebApp
-        window.Telegram.WebApp.ready();
-        debug('WebApp готов');
+        window.Telegram.WebApp.onEvent('mainButtonClicked', function(){
+            log('Кнопка MainButton нажата');
+        });
+
+        window.Telegram.WebApp.onEvent('viewportChanged', function(){
+            log('Viewport изменен');
+        });
     </script>
 </body>
 </html>
