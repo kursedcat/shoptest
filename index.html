@@ -7,84 +7,80 @@
         body {
             padding: 20px;
             font-family: Arial;
+            color: var(--tg-theme-text-color, #000000);
+            background: var(--tg-theme-bg-color, #ffffff);
         }
         .tariff {
             margin: 10px 0;
             padding: 15px;
             border: 1px solid #ddd;
             border-radius: 8px;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
         }
-        button {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            background: #0088cc;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        .price {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--tg-theme-button-color, #0088cc);
         }
-        #debug {
-            margin-top: 20px;
-            padding: 10px;
-            background: #f5f5f5;
-            border-radius: 4px;
-            font-size: 12px;
+        .main-button {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="tariff">
+    <div class="tariff" onclick="selectTariff('Интернет 100 Мбит/с', 799)">
         <h3>Интернет 100 Мбит/с</h3>
-        <p>799 ₽/мес</p>
-        <button onclick="buy('Интернет 100 Мбит/с', 799)">Выбрать</button>
+        <p class="price">799 ₽/мес</p>
+        <p>Высокоскоростной домашний интернет</p>
     </div>
 
-    <div class="tariff">
+    <div class="tariff" onclick="selectTariff('Интернет + ТВ', 999)">
         <h3>Интернет + ТВ</h3>
-        <p>999 ₽/мес</p>
-        <button onclick="buy('Интернет + ТВ', 999)">Выбрать</button>
+        <p class="price">999 ₽/мес</p>
+        <p>Интернет 100 Мбит/с + 160 каналов</p>
     </div>
-
-    <div id="debug"></div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        
-        function log(message) {
-            const debug = document.getElementById('debug');
-            debug.innerHTML += message + '<br>';
-            console.log(message);
+        let selectedTariff = null;
+        let selectedPrice = null;
+
+        tg.expand();
+
+        // Настраиваем главную кнопку
+        tg.MainButton.setParams({
+            text: 'ВЫБРАТЬ ТАРИФ',
+            color: '#2cab37'
+        });
+
+        function selectTariff(tariff, price) {
+            selectedTariff = tariff;
+            selectedPrice = price;
+            
+            // Показываем кнопку при выборе тарифа
+            tg.MainButton.setText('ВЫБРАТЬ ' + tariff);
+            tg.MainButton.show();
+
+            // Подсвечиваем выбранный тариф
+            document.querySelectorAll('.tariff').forEach(el => {
+                el.style.border = '1px solid #ddd';
+            });
+            event.currentTarget.style.border = '2px solid #0088cc';
         }
 
-        function buy(tariff, price) {
-            try {
-                log('Подготовка данных...');
-                
-                const data = {
-                    tariff: tariff,
-                    price: price
+        // Обработчик нажатия на главную кнопку
+        tg.MainButton.onClick(function() {
+            if (selectedTariff && selectedPrice) {
+                let data = {
+                    tariff: selectedTariff,
+                    price: selectedPrice
                 };
-                
-                log('Данные: ' + JSON.stringify(data));
-                
                 tg.sendData(JSON.stringify(data));
-                log('Данные отправлены');
-                
-                // Небольшая задержка перед закрытием
-                setTimeout(() => {
-                    log('Закрытие WebApp...');
-                    tg.close();
-                }, 500);
-                
-            } catch (error) {
-                log('Ошибка: ' + error.message);
             }
-        }
+        });
 
         // Инициализация
-        window.Telegram.WebApp.ready();
-        log('WebApp инициализирован');
+        tg.ready();
     </script>
 </body>
 </html>
